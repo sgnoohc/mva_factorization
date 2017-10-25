@@ -11,6 +11,7 @@ bkg_tree = f.Get("background_tree")
 
 def makeroc(xmin, xmax, name, title):
     labels = []
+    weights = []
     mva_scores = []
     mva_rewgt_scores = []
     for event in sig_tree:
@@ -18,17 +19,20 @@ def makeroc(xmin, xmax, name, title):
         labels.append(2)
         mva_scores.append(event.mva)
         mva_rewgt_scores.append(event.mva_rewgt)
+        weights.append(1)
     for event in bkg_tree:
         if event.x < xmin or event.x > xmax: continue
         labels.append(1)
         mva_scores.append(event.mva)
         mva_rewgt_scores.append(event.mva_rewgt)
+        weights.append(event.w)
 
     labels = np.array(labels)
+    weights = np.array(weights)
     mva_scores = np.array(mva_scores)
     mva_rewgt_scores = np.array(mva_rewgt_scores)
     fpr, tpr, thresholds = metrics.roc_curve(labels, mva_scores, pos_label=2)
-    fpr_rewgt, tpr_rewgt, thresholds_rewgt = metrics.roc_curve(labels, mva_rewgt_scores, pos_label=2)
+    fpr_rewgt, tpr_rewgt, thresholds_rewgt = metrics.roc_curve(labels, mva_rewgt_scores, pos_label=2, sample_weight=weights)
 
     import matplotlib.pyplot as plt
     plt.figure()
