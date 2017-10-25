@@ -1,6 +1,6 @@
 #include "reweight_x.C"
 
-void generate_data(int factor=1)
+void generate_data(int factor=10)
 {
     TFile* ofile = new TFile("bdt_input_data.root", "recreate");
     double x, y;

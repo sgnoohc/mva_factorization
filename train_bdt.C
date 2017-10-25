@@ -20,13 +20,17 @@
 //#include "TMVA/Category.h"
 //#endif
 
-void train_bdt()
+void train_bdt(bool use_rewgt=false)
 {
     // Initialize TMVA
     TMVA::Tools::Instance();
 //    (TMVA::gConfig().GetVariablePlotting()).fNbinsXOfROCCurve = 400;
 
-    TFile* outputFile = TFile::Open("BDT.root", "RECREATE");
+    TFile* outputFile = 0;
+    if (use_rewgt)
+        outputFile = TFile::Open("BDT_use_rewgt.root", "RECREATE");
+    else
+        outputFile = TFile::Open("BDT.root", "RECREATE");
 
     TMVA::Factory *factory = new TMVA::Factory("TMVA", outputFile, "V:DrawProgressBar=True:Transformations=I;D;P;G:AnalysisType=Classification");
 
@@ -36,8 +40,8 @@ void train_bdt()
     // -----------------------------
     //  Input File & Tree
     // -----------------------------
-    TFile* inputSignal = TFile::Open("validate_data.root");
-    TFile* inputBkg    = TFile::Open("validate_data.root");
+    TFile* inputSignal = TFile::Open("bdt_input_data.root");
+    TFile* inputBkg    = TFile::Open("bdt_input_data.root");
     TTree *signal     = (TTree*)inputSignal->Get("signal_tree");
     TTree *background = (TTree*)inputBkg->Get("background_tree");
     // global event weights per tree (see below for setting event-wise weights)
@@ -52,8 +56,17 @@ void train_bdt()
     // Apply additional cuts on the signal and background samples (can be different)
     TString prepare_nevents = "nTrain_Signal=100000:nTrain_Background=100000:nTest_Signal=100000:nTest_Background=100000:SplitMode=Alternate:NormMode=NumEvents:!V";
     factory->PrepareTrainingAndTestTree("", "", prepare_nevents);
+    if (use_rewgt)
+    {
+        factory->SetSignalWeightExpression("1");
+        factory->SetBackgroundWeightExpression("w");
+    }
 
-    factory->BookMethod(TMVA::Types::kBDT, "BDT", "!H:V:NTrees=200:BoostType=Grad:Shrinkage=0.10:!UseBaggedGrad:nCuts=2000:MinNodeSize=0.1%:PruneStrength=5:PruneMethod=CostComplexity:MaxDepth=3:CreateMVAPdfs");
+    TString option = "!H:V:NTrees=200:BoostType=Grad:Shrinkage=0.10:!UseBaggedGrad:nCuts=2000:MinNodeSize=0.1%:PruneStrength=5:PruneMethod=CostComplexity:MaxDepth=3:CreateMVAPdfs";
+    if (use_rewgt)
+        factory->BookMethod(TMVA::Types::kBDT, "BDT_use_rewgt", option);
+    else
+        factory->BookMethod(TMVA::Types::kBDT, "BDT", option);
     factory->TrainAllMethods();
     factory->TestAllMethods();
     factory->EvaluateAllMethods();

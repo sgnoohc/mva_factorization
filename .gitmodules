@@ -1,0 +1,3 @@
+[submodule "plottery"]
+	path = plottery
+	url = git@github.com:aminnj/plottery.git
