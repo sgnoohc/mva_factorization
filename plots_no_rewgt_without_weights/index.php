@@ -399,6 +399,15 @@ Two BDT's were trained with one with x and y variables as is, and the other with
 The reweighting was done in bins of 0.01 in x variable.
 </p>
 <p>
+The input the BDT evaluation was done like the following.
+</p>
+<p>
+For the BDT trained with reweighted input, a reweighted input is inputted.
+</p>
+<p>
+For the BDT trained without reweighted input, the original input is inputted.
+</p>
+<p>
 The inclusive roc curve shows that indeed the no-rewgt performs better, as expected.
 </p>
 <p>
